@@ -1,46 +1,43 @@
-﻿internal class Program
+﻿using System.Net.Sockets;
+using System.Net;
+using System.Text;
+using BatalhaNaval;
+internal class Program
 {
-    static char[,] grid = new char[10, 10];
+    
     private static void Main(string[] args)
     {
 
+        int port = 1020;
+
         Console.WriteLine("Servidor");
 
-        PlaceShipsRandomly(10);
-        Print(true);
+        StartServer(port);
+
+        
+
     }
 
-    public static void Print(bool showShips)
+    public static void StartServer(int port)
     {
-        Console.Write("   ");
-        for (int c = 0; c < 10; c++) Console.Write($"{c} ");
-        Console.WriteLine();
-        for (int r = 0; r < 10; r++)
-        {
-            Console.Write($"{(char)('A' + r)}  ");
-            for (int c = 0; c < 10; c++)
-            {
-                char cell = grid[r, c];
-                Console.Write(!showShips && cell == '*' ? "~ " : $"{cell} ");
-            }
-            Console.WriteLine();
-        }
+        var listener = new TcpListener(IPAddress.Any, port);
+        listener.Start();
+        Console.WriteLine($"Aguardando Player2 na porta {port}...");
+        var client = listener.AcceptTcpClient();
+        using var stream = client.GetStream();
+        Console.WriteLine("Player2 conectado!");
     }
 
-    public static void PlaceShipsRandomly(int n)
+    public static void Send(string msg, NetworkStream stream)
     {
-        var rnd = new Random();
-        int placed = 0;
-        while (placed < n)
-        {
-            int r = rnd.Next(10), c = rnd.Next(10);
-            if (grid[r, c] == '\0') // '\0' represents an uninitialized cell in a char array  
-            {
-                grid[r, c] = '*';
-                placed++;
-            }
-        }
+        var data = Encoding.ASCII.GetBytes(msg);
+        stream.Write(data, 0, data.Length);
     }
-
-    //private static char[,] grid = new char[10, 10]; // Corrected declaration of grid  
+    public static string Receive(NetworkStream stream)
+    {
+        var buf = new byte[32];
+        int len = stream.Read(buf, 0, buf.Length);
+        return Encoding.ASCII.GetString(buf, 0, len);
+    }
+  
 }
