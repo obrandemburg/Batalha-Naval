@@ -4,8 +4,10 @@ using System.Text;
 using BatalhaNaval;
 internal class Program
 {
-    
-    private static void Main(string[] args)
+
+    static NetworkStream stream = null;
+
+    private async static Task Main(string[] args)
     {
 
         int port = 1020;
@@ -14,7 +16,9 @@ internal class Program
 
         StartServer(port);
 
-        
+        await SendMap();
+
+
 
     }
 
@@ -24,20 +28,26 @@ internal class Program
         listener.Start();
         Console.WriteLine($"Aguardando Player2 na porta {port}...");
         var client = listener.AcceptTcpClient();
-        using var stream = client.GetStream();
+        stream = client.GetStream();
         Console.WriteLine("Player2 conectado!");
     }
 
-    public static void Send(string msg, NetworkStream stream)
+    public async static Task Send(string msg)
     {
         var data = Encoding.ASCII.GetBytes(msg);
-        stream.Write(data, 0, data.Length);
+        Console.WriteLine(data);
+        await stream.WriteAsync(data, 0, data.Length);
     }
-    public static string Receive(NetworkStream stream)
+
+    public async static Task SendMap()
     {
-        var buf = new byte[32];
-        int len = stream.Read(buf, 0, buf.Length);
-        return Encoding.ASCII.GetString(buf, 0, len);
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                await Send(Board.trancreveGrid(i, j));
+            }
+        }
     }
-  
+
 }

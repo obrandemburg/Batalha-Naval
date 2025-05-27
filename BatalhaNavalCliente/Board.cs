@@ -8,14 +8,12 @@ namespace BatalhaNaval
 {
     class Board
     {
-        public Board() { }
 
         public static char[,] grid = new char[10, 10];
-
-        public static string trancreveGrid(int x, int y)
-        {
-            return grid[x, y].ToString();
+        public Board(char[,] Grid) {
+            grid = Grid;
         }
+
 
         public static void Print(bool showShips)
         {
@@ -34,20 +32,6 @@ namespace BatalhaNaval
             }
         }
 
-        public static void PlaceShipsRandomly(int n)
-        {
-            var rnd = new Random();
-            int placed = 0;
-            while (placed < n)
-            {
-                int r = rnd.Next(10), c = rnd.Next(10);
-                if (grid[r, c] == '\0') // '\0' represents an uninitialized cell in a char array  
-                {
-                    grid[r, c] = '*';
-                    placed++;
-                }
-            }
-        }
 
         public static bool IsShip(int r, int c)
         {
@@ -60,9 +44,9 @@ namespace BatalhaNaval
 
         public static bool AreAllShipsSunk()
         {
-            for(int i = 0; i < 10; i++)
+            for (int i = 0; i < 10; i++)
             {
-                for(int j = 0; j < 10; j++)
+                for (int j = 0; j < 10; j++)
                 {
                     if (grid[i, j] == '*')
                     {
@@ -71,7 +55,15 @@ namespace BatalhaNaval
                 }
             }
             return true;
-            
+
+        }
+        public static bool MarkMiss(int r, int c)
+        {
+            if(grid[r, c] != '*')
+            {
+                return true;
+            }
+            return false;
         }
 
         /* IsShip(int r, int c), MarkHit(int r, int c), MarkMiss(int r, int c), AreAllShipsSunk().*/
