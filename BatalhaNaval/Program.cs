@@ -11,14 +11,32 @@ internal class Program
     {
 
         int port = 1020;
-
-        Console.WriteLine("Servidor");
+        bool jogoRolando = true;
+        Console.WriteLine("Servidor, iniciando mapa");
+        Board.PlaceShipsRandomly(10);
 
         StartServer(port);
-
         await SendMap();
 
+        while (jogoRolando)
+        {
 
+
+            string ataque = await RecebeAtaques();
+            string resultado = await Board.RecebeAtaque(ataque);
+
+            if (resultado.Contains("Todos os navios foram afundados!"))
+            {
+                jogoRolando = false;
+                await Send("Fim de jogo! Todos os navios foram afundados!\n");
+            }
+
+            await Send(resultado + "\n");
+
+            await SendMap();
+
+
+        }
 
     }
 
@@ -32,12 +50,13 @@ internal class Program
         Console.WriteLine("Player2 conectado!");
     }
 
+
     public async static Task Send(string msg)
     {
         var data = Encoding.ASCII.GetBytes(msg);
-        Console.WriteLine(data);
         await stream.WriteAsync(data, 0, data.Length);
     }
+
 
     public async static Task SendMap()
     {
@@ -48,6 +67,27 @@ internal class Program
                 await Send(Board.trancreveGrid(i, j));
             }
         }
+    }
+
+    public async static Task<string> RecebeAtaques()
+    {
+        var buffer = new byte[3];
+
+        int bytesLidos = 0;
+
+        while (bytesLidos < buffer.Length)
+        {
+            bytesLidos += await stream.ReadAsync(buffer, bytesLidos, buffer.Length - bytesLidos);
+        }
+
+        if (bytesLidos == 0)
+        {
+            throw new Exception("Conexão encerrada pelo servidor.");
+        }
+
+        string mensagem = Encoding.ASCII.GetString(buffer, 0, bytesLidos);
+
+        return mensagem;
     }
 
 }

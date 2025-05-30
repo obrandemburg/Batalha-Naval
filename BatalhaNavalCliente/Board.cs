@@ -14,6 +14,11 @@ namespace BatalhaNaval
             grid = Grid;
         }
 
+        public static void setGrid(char[,] Grid)
+        {
+            grid = Grid;
+        }
+
 
         public static void Print(bool showShips)
         {
